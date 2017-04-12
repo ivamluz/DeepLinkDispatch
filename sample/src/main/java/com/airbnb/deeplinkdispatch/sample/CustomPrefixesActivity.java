@@ -1,40 +1,62 @@
 package com.airbnb.deeplinkdispatch.sample;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.airbnb.deeplinkdispatch.DeepLink;
 import com.airbnb.deeplinkdispatch.sample.library.LibraryDeepLink;
 
-@AppDeepLink({ "/view_users" })
-@WebDeepLink({ "/users", "/user/{id}" })
-@LibraryDeepLink({ "/library_deeplink", "/library_deeplink/{lib_id}" })
+@AppDeepLink({"/view_users"})
+@WebDeepLink({"/users", "/user/{id}"})
+@LibraryDeepLink({"/library_deeplink", "/library_deeplink/{lib_id}"})
 public class CustomPrefixesActivity extends AppCompatActivity {
-  private static final String TAG = CustomPrefixesActivity.class.getSimpleName();
 
-  @Override protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
+    private static final String TAG = CustomPrefixesActivity.class.getSimpleName();
 
-    if (getIntent().getBooleanExtra(DeepLink.IS_DEEP_LINK, false)) {
-      Bundle parameters = getIntent().getExtras();
-      Log.d(TAG, "Deeplink params: " + parameters);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-      String idString = parameters.getString("id");
-      if (!TextUtils.isEmpty(idString)) {
-        showToast("class id== " + idString);
-      } else {
-        showToast("no id in the deeplink");
-      }
-    } else {
-      showToast("no deep link :( ");
+        TextView activityName = (TextView) findViewById(R.id.activityName);
+        if (activityName != null) {
+            activityName.setText(getClass().getSimpleName());
+        }
+
+        Button button = (Button) findViewById(R.id.launchButton);
+        if (button != null) {
+            button.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(CustomPrefixesActivity.this, MainActivity.class));
+                }
+            });
+        }
+
+        if (getIntent().getBooleanExtra(DeepLink.IS_DEEP_LINK, false)) {
+            Bundle parameters = getIntent().getExtras();
+            Log.d(TAG, "Deeplink params: " + parameters);
+
+            String idString = parameters.getString("id");
+            if (!TextUtils.isEmpty(idString)) {
+                showToast("class id== " + idString);
+            } else {
+                showToast("no id in the deeplink");
+            }
+        } else {
+            showToast("no deep link :( ");
+        }
     }
-  }
 
-  private void showToast(String message) {
-    Toast.makeText(this, "Deep Link: " + message, Toast.LENGTH_SHORT).show();
-  }
+    private void showToast(String message) {
+        Toast.makeText(this, "Deep Link: " + message, Toast.LENGTH_SHORT).show();
+    }
 }

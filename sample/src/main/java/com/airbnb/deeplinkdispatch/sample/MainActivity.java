@@ -23,87 +23,95 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.airbnb.deeplinkdispatch.DeepLink;
 
-@DeepLink({ "dld://classDeepLink", "http://example.com/foo{arg}", "dld://example.com/deepLink" })
+@DeepLink({"dld://classDeepLink", "http://example.com/foo{arg}", "dld://example.com/deepLink"})
 public class MainActivity extends AppCompatActivity {
-  private static final String ACTION_DEEP_LINK_METHOD = "deep_link_method";
-  private static final String ACTION_DEEP_LINK_COMPLEX = "deep_link_complex";
-  private static final String TAG = MainActivity.class.getSimpleName();
 
-  @Override protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
+    private static final String ACTION_DEEP_LINK_METHOD = "deep_link_method";
+    private static final String ACTION_DEEP_LINK_COMPLEX = "deep_link_complex";
+    private static final String TAG = MainActivity.class.getSimpleName();
 
-    Intent intent = getIntent();
-    if (intent.getBooleanExtra(DeepLink.IS_DEEP_LINK, false)) {
-      String toastMessage;
-      Bundle parameters = intent.getExtras();
-      Log.d(TAG, "Deeplink params: " + parameters);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-      if (ACTION_DEEP_LINK_METHOD.equals(intent.getAction())) {
-        toastMessage = "method with param1:" + parameters.getString("param1");
-      } else if (ACTION_DEEP_LINK_COMPLEX.equals(intent.getAction())) {
-        toastMessage = parameters.getString("arbitraryNumber");
-      } else if (parameters.containsKey("arg")) {
-        toastMessage = "class and found arg:" + parameters.getString("arg");
-      } else {
-        toastMessage = "class";
-      }
+        TextView activityName = (TextView) findViewById(R.id.activityName);
+        if (activityName != null) {
+            activityName.setText(getClass().getSimpleName());
+        }
 
-      // You can pass a query parameter with the URI, and it's also in parameters, like
-      // dld://classDeepLink?qp=123
-      if (parameters.containsKey("qp")) {
-        toastMessage += " with query parameter " + parameters.getString("qp");
-      }
-      Uri referrer = ActivityCompat.getReferrer(this);
-      if (referrer != null) {
-        toastMessage += " and referrer: " + referrer.toString();
-      }
+        Intent intent = getIntent();
+        if (intent.getBooleanExtra(DeepLink.IS_DEEP_LINK, false)) {
+            String toastMessage;
+            Bundle parameters = intent.getExtras();
+            Log.d(TAG, "Deeplink params: " + parameters);
 
-      showToast(toastMessage);
+            if (ACTION_DEEP_LINK_METHOD.equals(intent.getAction())) {
+                toastMessage = "method with param1:" + parameters.getString("param1");
+            } else if (ACTION_DEEP_LINK_COMPLEX.equals(intent.getAction())) {
+                toastMessage = parameters.getString("arbitraryNumber");
+            } else if (parameters.containsKey("arg")) {
+                toastMessage = "class and found arg:" + parameters.getString("arg");
+            } else {
+                toastMessage = "class";
+            }
+
+            // You can pass a query parameter with the URI, and it's also in parameters, like
+            // dld://classDeepLink?qp=123
+            if (parameters.containsKey("qp")) {
+                toastMessage += " with query parameter " + parameters.getString("qp");
+            }
+            Uri referrer = ActivityCompat.getReferrer(this);
+            if (referrer != null) {
+                toastMessage += " and referrer: " + referrer.toString();
+            }
+
+            showToast(toastMessage);
+        }
     }
-  }
 
-  @DeepLink("dld://methodDeepLink/{param1}")
-  public static Intent intentForDeepLinkMethod(Context context) {
-    return new Intent(context, MainActivity.class).setAction(ACTION_DEEP_LINK_METHOD);
-  }
-
-
-  @DeepLink("dld://host/somePath/{arbitraryNumber}")
-  public static Intent intentForParamDeepLinkMethod(Context context) {
-    return new Intent(context, MainActivity.class).setAction(ACTION_DEEP_LINK_COMPLEX);
-  }
-
-  @DeepLink("http://example.com/deepLink/{id}/{name}/{place}")
-  public static TaskStackBuilder intentForTaskStackBuilderMethods(Context context, Bundle bundle) {
-    Log.d(TAG, "without query parameter :");
-    if (bundle != null && bundle.containsKey("qp")) {
-      Log.d(TAG, "found new parameter :with query parameter :" + bundle.getString("qp"));
+    @DeepLink("dld://methodDeepLink/{param1}")
+    public static Intent intentForDeepLinkMethod(Context context) {
+        return new Intent(context, MainActivity.class).setAction(ACTION_DEEP_LINK_METHOD);
     }
-    Intent detailsIntent =
-        new Intent(context, SecondActivity.class).setAction(ACTION_DEEP_LINK_COMPLEX);
-    Intent parentIntent =
-        new Intent(context, MainActivity.class).setAction(ACTION_DEEP_LINK_COMPLEX);
-    TaskStackBuilder taskStackBuilder = TaskStackBuilder.create(context);
-    taskStackBuilder.addNextIntent(parentIntent);
-    taskStackBuilder.addNextIntent(detailsIntent);
-    return taskStackBuilder;
 
-  }
 
-  @DeepLink("dld://host/somePathOne/{arbitraryNumber}/otherPath")
-  public static Intent intentForComplexMethod(Context context, Bundle bundle) {
-    if (bundle != null && bundle.containsKey("qp")) {
-      Log.d(TAG, "found new parameter :with query parameter :" + bundle.getString("qp"));
+    @DeepLink("dld://host/somePath/{arbitraryNumber}")
+    public static Intent intentForParamDeepLinkMethod(Context context) {
+        return new Intent(context, MainActivity.class).setAction(ACTION_DEEP_LINK_COMPLEX);
     }
-    return new Intent(context, MainActivity.class).setAction(ACTION_DEEP_LINK_COMPLEX);
-  }
 
-  private void showToast(String message) {
-    Toast.makeText(this, "Deep Link: " + message, Toast.LENGTH_SHORT).show();
-  }
+    @DeepLink("http://example.com/deepLink/{id}/{name}/{place}")
+    public static TaskStackBuilder intentForTaskStackBuilderMethods(Context context, Bundle bundle) {
+        Log.d(TAG, "without query parameter :");
+        if (bundle != null && bundle.containsKey("qp")) {
+            Log.d(TAG, "found new parameter :with query parameter :" + bundle.getString("qp"));
+        }
+        Intent detailsIntent =
+                new Intent(context, SecondActivity.class).setAction(ACTION_DEEP_LINK_COMPLEX);
+        Intent parentIntent =
+                new Intent(context, MainActivity.class).setAction(ACTION_DEEP_LINK_COMPLEX);
+        TaskStackBuilder taskStackBuilder = TaskStackBuilder.create(context);
+        taskStackBuilder.addNextIntent(parentIntent);
+        taskStackBuilder.addNextIntent(detailsIntent);
+        return taskStackBuilder;
+
+    }
+
+    @DeepLink("dld://host/somePathOne/{arbitraryNumber}/otherPath")
+    public static Intent intentForComplexMethod(Context context, Bundle bundle) {
+        if (bundle != null && bundle.containsKey("qp")) {
+            Log.d(TAG, "found new parameter :with query parameter :" + bundle.getString("qp"));
+        }
+        return new Intent(context, MainActivity.class).setAction(ACTION_DEEP_LINK_COMPLEX);
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, "Deep Link: " + message, Toast.LENGTH_SHORT).show();
+    }
 }
